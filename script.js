@@ -1,0 +1,347 @@
+/* Vale Reflexology — shared site behaviour */
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadPartials();
+  initNav();
+  initReveal();
+  initYear();
+  initFootMap();
+  initNews();
+  initBooking();
+  initContactForm();
+});
+
+/* ---------------- Shared nav/footer includes ---------------- */
+/* Keeps the header and footer markup in one place (nav.html / footer.html)
+   instead of duplicated in every page. Requires the site to be served over
+   http/https (GitHub Pages, a local dev server, etc.) — browsers block
+   fetch() of local files when a page is opened directly as file://. */
+async function loadPartials() {
+  const navSlot = document.getElementById('nav-include');
+  const footerSlot = document.getElementById('footer-include');
+  const jobs = [];
+  if (navSlot) jobs.push(includeInto(navSlot, 'nav.html'));
+  if (footerSlot) jobs.push(includeInto(footerSlot, 'footer.html'));
+  await Promise.all(jobs);
+  markActiveNavLink();
+}
+
+async function includeInto(slot, url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('not ok');
+    slot.outerHTML = await res.text();
+  } catch (err) {
+    console.warn(`Could not load ${url} — if you're viewing this by double-clicking the file, serve it with a local server instead (e.g. "python3 -m http.server").`);
+  }
+}
+
+function markActiveNavLink() {
+  const page = (location.pathname.split('/').pop() || 'index.html');
+  document.querySelectorAll('.nav-links a[data-page]').forEach(a => {
+    if (a.dataset.page === page) a.classList.add('active');
+  });
+}
+
+/* ---------------- Nav ---------------- */
+function initNav() {
+  const toggle = document.querySelector('.nav-toggle');
+  const links = document.querySelector('.nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', () => {
+    links.classList.toggle('open');
+    const expanded = links.classList.contains('open');
+    toggle.setAttribute('aria-expanded', expanded);
+  });
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => links.classList.remove('open')));
+}
+
+/* ---------------- Scroll reveal ---------------- */
+function initReveal() {
+  const items = document.querySelectorAll('.reveal');
+  if (!items.length) return;
+  if (!('IntersectionObserver' in window)) { items.forEach(i => i.classList.add('in')); return; }
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  items.forEach(i => obs.observe(i));
+}
+
+function initYear() {
+  document.querySelectorAll('.js-year').forEach(el => el.textContent = new Date().getFullYear());
+}
+
+function showToast(msg) {
+  let toast = document.querySelector('.toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+/* ---------------- Reflex zone map (signature element) ---------------- */
+const ZONE_INFO = {
+  head: { name: 'Head & Sinuses', text: 'The tips of the toes mirror the head, brain and sinuses — a common area of focus for tension headaches and migraines.' },
+  chest: { name: 'Chest & Lungs', text: 'The ball of the foot corresponds to the chest, lungs and shoulders, often worked to ease tightness and support easier breathing.' },
+  digestion: { name: 'Digestive System', text: 'The arch reflects the stomach, liver and intestines — a key area for clients managing IBS or general digestive discomfort.' },
+  kidneys: { name: 'Kidneys & Balance', text: 'The centre of the foot relates to the kidneys and adrenal glands, linked to energy levels and the body\u2019s stress response.' },
+  spine: { name: 'Spine & Nerves', text: 'The inner edge of the foot traces the spine, from neck to lower back — useful when working with back and neck pain.' },
+  hormones: { name: 'Hormonal Balance', text: 'The ankle area corresponds to the reproductive and hormonal system, often a focus for PMS, cycles and menopause support.' }
+};
+
+function initFootMap() {
+  const dots = document.querySelectorAll('.zone-dot');
+  const nameEl = document.querySelector('.map-info .cond-name');
+  const textEl = document.querySelector('.map-info .cond-text');
+  if (!dots.length || !nameEl || !textEl) return;
+  dots.forEach(dot => {
+    dot.addEventListener('mouseenter', () => activateZone(dot));
+    dot.addEventListener('focus', () => activateZone(dot));
+    dot.addEventListener('click', () => activateZone(dot));
+  });
+  function activateZone(dot) {
+    dots.forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    const key = dot.dataset.zone;
+    const info = ZONE_INFO[key];
+    if (info) { nameEl.textContent = info.name; textEl.textContent = info.text; }
+  }
+}
+
+/* ---------------- Weekly reflexology news + social sharing ---------------- */
+const NEWS_QUERY = 'reflexology OR "foot health" OR "holistic wellbeing"';
+const FALLBACK_ARTICLES = [
+  { title: 'Why reflexology sessions are becoming part of weekly self-care routines', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'More clients are booking reflexology on a regular schedule, rather than as a one-off treat, to support ongoing stress management and sleep.' },
+  { title: 'The link between foot health and everyday wellbeing', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'Looking after the feet supports posture, circulation and balance — reflexology sessions are a relaxing way to build this into your routine.' },
+  { title: 'Understanding holistic therapies alongside conventional care', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'Reflexology is increasingly used alongside, not instead of, conventional healthcare — supporting relaxation and general wellbeing.' }
+];
+
+function initNews() {
+  const list = document.querySelector('.js-news-list');
+  if (!list) return;
+  const updatedBadge = document.querySelector('.js-updated');
+  const refreshBtn = document.querySelector('.js-refresh');
+  const load = () => fetchWeeklyNews(list, updatedBadge);
+  if (refreshBtn) refreshBtn.addEventListener('click', load);
+  load();
+}
+
+async function fetchWeeklyNews(list, updatedBadge) {
+  list.innerHTML = '<p><span class="spinner"></span>&nbsp; Fetching this week\u2019s reflexology &amp; wellbeing stories\u2026</p>';
+  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(NEWS_QUERY)}+when:7d&hl=en-GB&gl=GB&ceid=GB:en`;
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error('feed unavailable');
+    const data = await res.json();
+    if (!data.items || !data.items.length) throw new Error('no items');
+    renderNews(list, data.items.slice(0, 6).map(item => ({
+      title: stripTags(item.title),
+      source: (item.title.match(/- (.*?)$/) || [])[1] || 'Google News',
+      link: item.link,
+      summary: stripTags(item.description).slice(0, 220)
+    })));
+  } catch (err) {
+    renderNews(list, FALLBACK_ARTICLES, true);
+  }
+  if (updatedBadge) updatedBadge.textContent = 'Last checked: ' + new Date().toLocaleString('en-GB', { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+}
+
+function stripTags(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
+
+function renderNews(list, items, isFallback) {
+  list.innerHTML = '';
+  if (isFallback) {
+    const note = document.createElement('p');
+    note.className = 'updated-badge';
+    note.style.marginBottom = '18px';
+    note.textContent = 'Live feed unavailable right now, showing evergreen reflexology tips instead — try refreshing shortly.';
+    list.appendChild(note);
+  }
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card news-card reveal in';
+    const caption = buildCaption(item);
+    card.innerHTML = `
+      <span class="src">${escapeHtml(item.source)}</span>
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.summary)}</p>
+      <div class="news-actions">
+        <a class="btn btn-fb" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(item.link)}&quote=${encodeURIComponent(item.title)}">Share to Facebook</a>
+        <button class="btn btn-ig js-copy-ig" type="button">Copy caption for Instagram</button>
+        <a class="btn btn-outline on-light" target="_blank" rel="noopener" href="${item.link}">Read source</a>
+      </div>
+      <div class="caption-box" hidden>${escapeHtml(caption)}</div>
+    `;
+    card.querySelector('.js-copy-ig').addEventListener('click', () => copyCaption(card, caption));
+    list.appendChild(card);
+  });
+}
+
+function buildCaption(item) {
+  return `${item.title}\n\n${item.summary}\n\n🦶 Booking now at Vale Reflexology, Vale of Glamorgan.\nLink in bio to book with Kim.\n\n#Reflexology #ValeOfGlamorgan #HolisticHealth #Wellbeing #FootHealth #SelfCare`;
+}
+
+async function copyCaption(card, caption) {
+  const box = card.querySelector('.caption-box');
+  try {
+    await navigator.clipboard.writeText(caption);
+    box.hidden = false;
+    showToast('Caption copied — paste it into a new Instagram post');
+  } catch (err) {
+    box.hidden = false;
+    showToast('Couldn\u2019t access clipboard — caption shown below to copy manually');
+  }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+
+/* ---------------- Booking form ---------------- */
+const SERVICE_DURATIONS = {
+  'Free Discovery Call (15 min, free)': 15,
+  'Initial Consultation (1hr 30, £65)': 90,
+  'Follow-up Consultation (1hr, £45)': 60,
+  'Home Visit — Foot Reflexology (1hr, £65)': 60,
+  'Six Follow-up Session Pack (1hr sessions)': 60,
+  'Initial Consult + 5 Follow-ups Pack (1hr sessions)': 60
+};
+const CLINIC_START = 9.5; // 9:30am
+const CLINIC_END = 15; // 3:00pm
+const takenSlots = new Set(); // demo only — in-memory per visit, not a real calendar
+
+function initBooking() {
+  const form = document.querySelector('.js-booking-form');
+  if (!form) return;
+  const serviceSel = form.querySelector('[name="service"]');
+  const dateInput = form.querySelector('[name="date"]');
+  const slotsWrap = form.querySelector('.js-slots');
+  const summary = form.querySelector('.js-summary');
+  const confirmPanel = document.querySelector('.js-confirm-panel');
+  let selectedSlot = null;
+
+  Object.keys(SERVICE_DURATIONS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    serviceSel.appendChild(opt);
+  });
+
+  const today = new Date();
+  dateInput.min = today.toISOString().split('T')[0];
+
+  function buildSlots() {
+    slotsWrap.innerHTML = '';
+    selectedSlot = null;
+    updateSummary();
+    const service = serviceSel.value;
+    const dateVal = dateInput.value;
+    if (!service || !dateVal) return;
+    const day = new Date(dateVal + 'T00:00:00').getDay();
+    if (day === 0 || day === 6) {
+      slotsWrap.innerHTML = '<p class="updated-badge">Kim sees clients Monday–Friday, 9:30am–3pm — please choose a weekday.</p>';
+      return;
+    }
+    const duration = SERVICE_DURATIONS[service];
+    let t = CLINIC_START;
+    while (t + duration / 60 <= CLINIC_END + 0.001) {
+      const hh = Math.floor(t);
+      const mm = Math.round((t - hh) * 60);
+      const label = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot-btn';
+      btn.textContent = label;
+      const slotKey = `${dateVal}_${label}`;
+      if (takenSlots.has(slotKey)) { btn.classList.add('taken'); btn.disabled = true; }
+      btn.addEventListener('click', () => {
+        slotsWrap.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSlot = label;
+        updateSummary();
+      });
+      slotsWrap.appendChild(btn);
+      t += duration / 60;
+    }
+    if (!slotsWrap.children.length) slotsWrap.innerHTML = '<p class="updated-badge">No slots of this length fit before closing — try Follow-up or Discovery Call.</p>';
+  }
+
+  function updateSummary() {
+    const service = serviceSel.value;
+    const dateVal = dateInput.value;
+    if (service && dateVal && selectedSlot) {
+      const niceDate = new Date(dateVal + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      summary.innerHTML = `<strong>${escapeHtml(service)}</strong><br>${niceDate} at ${selectedSlot}`;
+      summary.parentElement.hidden = false;
+    } else {
+      summary.parentElement.hidden = true;
+    }
+  }
+
+  serviceSel.addEventListener('change', buildSlots);
+  dateInput.addEventListener('change', buildSlots);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const service = serviceSel.value;
+    const dateVal = dateInput.value;
+    const name = form.querySelector('[name="name"]').value.trim();
+    const email = form.querySelector('[name="email"]').value.trim();
+    const phone = form.querySelector('[name="phone"]').value.trim();
+    const notes = form.querySelector('[name="notes"]').value.trim();
+
+    if (!service || !dateVal || !selectedSlot) { showToast('Please choose a service, date and time'); return; }
+    if (!name || !email) { showToast('Please add your name and email'); return; }
+
+    const slotKey = `${dateVal}_${selectedSlot}`;
+    takenSlots.add(slotKey);
+    buildSlots();
+
+    const niceDate = new Date(dateVal + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const subject = `Appointment request: ${service} — ${niceDate} ${selectedSlot}`;
+    const body = [
+      `New appointment request via valereflexology.co.uk`,
+      ``,
+      `Service: ${service}`,
+      `Requested date: ${niceDate}`,
+      `Requested time: ${selectedSlot}`,
+      ``,
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Phone: ${phone || '—'}`,
+      ``,
+      `Notes: ${notes || '—'}`
+    ].join('\n');
+    const mailto = `mailto:kim@valereflexology.co.uk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    if (confirmPanel) {
+      confirmPanel.classList.add('show');
+      confirmPanel.querySelector('.js-confirm-details').innerHTML = `<strong>${escapeHtml(service)}</strong><br>${niceDate} at ${selectedSlot}<br>${escapeHtml(name)} · ${escapeHtml(email)}`;
+      confirmPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    window.location.href = mailto;
+  });
+}
+
+/* ---------------- Contact form (mailto fallback, no backend required) ---------------- */
+function initContactForm() {
+  const form = document.querySelector('.js-contact-form');
+  if (!form) return;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = form.querySelector('[name="name"]').value.trim();
+    const email = form.querySelector('[name="email"]').value.trim();
+    const subject = form.querySelector('[name="subject"]').value.trim() || 'Message from valereflexology.co.uk';
+    const message = form.querySelector('[name="message"]').value.trim();
+    if (!name || !email || !message) { showToast('Please fill in your name, email and message'); return; }
+    const body = `${message}\n\n— ${name} (${email})`;
+    window.location.href = `mailto:kim@valereflexology.co.uk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const notice = form.querySelector('.js-contact-notice');
+    if (notice) notice.classList.add('show');
+  });
+}

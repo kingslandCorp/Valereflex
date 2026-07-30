@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book an Appointment | Vale Reflexology</title>
+<meta name="description" content="Book a reflexology appointment with Kim Davis at Vale Reflexology, Vale of Glamorgan. Choose a service, date and time that suits you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="nav-include"></div>
+
+<section class="page-hero">
+  <div class="container" id="discovery">
+    <span class="breadcrumb">Home / Book an Appointment</span>
+    <h1 style="margin-top:14px;">Book an Appointment</h1>
+    <p class="lede">Choose a service, pick a date and time, and add your details. Kim sees clients Monday–Friday, 9:30am–3pm.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid-2" style="align-items:start;">
+
+    <form class="card js-booking-form" novalidate>
+      <div class="notice">Fields marked with the service and time are required. You'll be asked to send a confirmation email to Kim as the final step.</div>
+
+      <div class="field full">
+        <label for="service">Service</label>
+        <select id="service" name="service" required>
+          <option value="">Choose a service…</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label for="date">Preferred date</label>
+        <input type="date" id="date" name="date" required>
+        <small>Monday–Friday only, appointments 9:30am–3pm.</small>
+      </div>
+
+      <div class="field full">
+        <label>Available times</label>
+        <div class="js-slots slots"><p class="updated-badge">Choose a service and date to see available times.</p></div>
+      </div>
+
+      <div class="card-tight" style="border:none; background:transparent; padding-left:0; padding-right:0;" hidden>
+        <div class="booking-summary js-summary"></div>
+      </div>
+
+      <div class="form-grid" style="margin-top:24px;">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        <div class="field full">
+          <label for="notes">Anything Kim should know?</label>
+          <textarea id="notes" name="notes" placeholder="E.g. specific health concerns, first visit, mobility needs…"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" type="submit">Request this appointment</button>
+
+      <div class="confirm-panel js-confirm-panel" style="margin-top:22px;">
+        <div class="notice success">
+          <strong>Almost there.</strong> Your email app should now be open with the details below, ready to send to Kim. Sending it confirms your request — Kim will reply to confirm your slot.
+          <div class="js-confirm-details" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </form>
+
+    <div>
+      <div class="card" style="margin-bottom:24px;">
+        <h3 class="mt-0">Good to know</h3>
+        <ul class="tag-list">
+          <li>Appointment only — Monday to Friday, 9:30am–3pm.</li>
+          <li>First time? Start with a free 15-minute Discovery Call or the 90-minute Initial Consultation.</li>
+          <li>Home visits available across the Vale of Glamorgan.</li>
+          <li>Wear comfortable clothes you can roll up to the knee.</li>
+        </ul>
+      </div>
+      <div class="card" style="background: var(--teal-mist); border:none;">
+        <h3 class="mt-0">How booking works on this site</h3>
+        <p style="margin-bottom:0;">This form checks availability against the slots shown, then prepares an email to Kim with everything filled in — nothing gets lost in translation. For a live, always-up-to-date calendar that clients can book instantly (and that syncs with Kim's diary), this can be connected to a booking platform such as Wix Bookings, Fresha or Acuity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-include"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
