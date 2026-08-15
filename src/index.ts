@@ -29,8 +29,12 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.hostname === 'valereflexology.co.uk') {
-      url.hostname = 'www.valereflexology.co.uk';
+    // Canonical host is www.valereflexology.com — everything else we're bound to
+    // (the bare .com apex, and the .co.uk domain once it's reachable at all) redirects there.
+    const CANONICAL_HOST = 'www.valereflexology.com';
+    const REDIRECT_HOSTS = new Set(['valereflexology.com', 'valereflexology.co.uk', 'www.valereflexology.co.uk']);
+    if (REDIRECT_HOSTS.has(url.hostname)) {
+      url.hostname = CANONICAL_HOST;
       return Response.redirect(url.toString(), 301);
     }
 

@@ -27,7 +27,7 @@
     "crons": ["*/5 * * * *"]
   },
   "vars": {
-    "SITE_ORIGIN": "https://www.valereflexology.co.uk",
+    "SITE_ORIGIN": "https://www.valereflexology.com",
     "SIX_FOLLOWUP_PACK_PENCE": "24000",
     "INITIAL_PLUS_FIVE_PACK_PENCE": "26000"
   }

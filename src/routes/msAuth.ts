@@ -9,8 +9,11 @@ function html(body: string): Response {
 }
 
 export async function handleMicrosoftAuthStart(env: Env, url: URL): Promise<Response> {
-  const setupKey = url.searchParams.get('setup_key');
-  if (!env.SETUP_KEY || setupKey !== env.SETUP_KEY) return errorResponse('forbidden', 403);
+  // Trim defensively — secrets entered via an interactive Windows terminal prompt can pick up an
+  // invisible trailing \r, which would otherwise make an exact-looking value silently never match.
+  const setupKey = (url.searchParams.get('setup_key') ?? '').trim();
+  const expectedKey = (env.SETUP_KEY ?? '').trim();
+  if (!expectedKey || setupKey !== expectedKey) return errorResponse('forbidden', 403);
   if (!env.MS_CLIENT_ID) return errorResponse('Microsoft integration is not configured yet', 500);
 
   const redirectUri = `${env.SITE_ORIGIN}/api/auth/microsoft/callback`;
