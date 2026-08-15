@@ -87,8 +87,13 @@ function showToast(msg) {
 /* ---------------- Reflex zone map (signature element) ---------------- */
 const ZONE_INFO = {
   head: { name: 'Head & Sinuses', text: 'The tips of the toes mirror the head, brain and sinuses — a common area of focus for tension headaches and migraines.' },
-  chest: { name: 'Chest & Lungs', text: 'The ball of the foot corresponds to the chest, lungs and shoulders, often worked to ease tightness and support easier breathing.' },
-  digestion: { name: 'Digestive System', text: 'The arch reflects the stomach, liver and intestines — a key area for clients managing IBS or general digestive discomfort.' },
+  chest: { name: 'Chest & Solar Plexus', text: 'The centre of the ball of the foot reflects the chest and solar plexus, often worked to ease tension and encourage a full, relaxed breath.' },
+  lung: { name: 'Lungs & Shoulders', text: 'Just below the toes on the outer edge, this zone reflects the lungs and shoulders, often worked to ease tightness through the chest and upper back.' },
+  heart: { name: 'Heart', text: 'Sitting just inside the lung zone, the heart reflex is linked to circulation and is often included to support a sense of calm.' },
+  liver: { name: 'Liver & Gallbladder', text: 'On the outer sole, this zone reflects the liver and gallbladder, key organs for digestion and the body’s natural detoxification.' },
+  digestion: { name: 'Stomach & Digestive System', text: 'The centre of the arch reflects the stomach and digestive system, a key area for clients managing IBS or general digestive discomfort.' },
+  gut: { name: 'Large Intestine', text: 'Tracing across the midfoot, this zone reflects the large intestine, often worked alongside the stomach zone for digestive support.' },
+  bladder: { name: 'Bladder', text: 'Toward the inner heel, the bladder reflex is linked to fluid balance and is often worked alongside the kidney zone.' },
   kidneys: { name: 'Kidneys & Balance', text: 'The centre of the foot relates to the kidneys and adrenal glands, linked to energy levels and the body\u2019s stress response.' },
   spine: { name: 'Spine & Nerves', text: 'The inner edge of the foot traces the spine, from neck to lower back — useful when working with back and neck pain.' },
   hormones: { name: 'Hormonal Balance', text: 'The ankle area corresponds to the reproductive and hormonal system, often a focus for PMS, cycles and menopause support.' }
