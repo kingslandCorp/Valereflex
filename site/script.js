@@ -204,17 +204,14 @@ function escapeHtml(str) {
 }
 
 /* ---------------- Booking form ---------------- */
+// Label text only — duration/price/package-eligibility are authoritative server-side
+// (src/lib/availability.ts SERVICE_DEFS). Never trust this map for money or scheduling.
 const SERVICE_DURATIONS = {
   'Free Discovery Call (15 min, free)': 15,
   'Initial Consultation (1hr 30, £65)': 90,
   'Follow-up Consultation (1hr, £45)': 60,
-  'Home Visit — Foot Reflexology (1hr, £65)': 60,
-  'Six Follow-up Session Pack (1hr sessions)': 60,
-  'Initial Consult + 5 Follow-ups Pack (1hr sessions)': 60
+  'Home Visit — Foot Reflexology (1hr, £65)': 60
 };
-const CLINIC_START = 9.5; // 9:30am
-const CLINIC_END = 15; // 3:00pm
-const takenSlots = new Set(); // demo only — in-memory per visit, not a real calendar
 
 function initBooking() {
   const form = document.querySelector('.js-booking-form');
@@ -224,6 +221,9 @@ function initBooking() {
   const slotsWrap = form.querySelector('.js-slots');
   const summary = form.querySelector('.js-summary');
   const confirmPanel = document.querySelector('.js-confirm-panel');
+  const creditBanner = form.querySelector('.js-pack-credit-banner');
+  const emailInput = form.querySelector('[name="email"]');
+  const submitBtn = form.querySelector('.js-booking-submit');
   let selectedSlot = null;
 
   Object.keys(SERVICE_DURATIONS).forEach(name => {
@@ -235,7 +235,7 @@ function initBooking() {
   const today = new Date();
   dateInput.min = today.toISOString().split('T')[0];
 
-  function buildSlots() {
+  async function buildSlots() {
     slotsWrap.innerHTML = '';
     selectedSlot = null;
     updateSummary();
@@ -247,18 +247,28 @@ function initBooking() {
       slotsWrap.innerHTML = '<p class="updated-badge">Kim sees clients Monday–Friday, 9:30am–3pm — please choose a weekday.</p>';
       return;
     }
-    const duration = SERVICE_DURATIONS[service];
-    let t = CLINIC_START;
-    while (t + duration / 60 <= CLINIC_END + 0.001) {
-      const hh = Math.floor(t);
-      const mm = Math.round((t - hh) * 60);
-      const label = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    slotsWrap.innerHTML = '<p class="updated-badge"><span class="spinner"></span>&nbsp; Checking Kim’s diary…</p>';
+    try {
+      const res = await fetch(`/api/availability?service=${encodeURIComponent(service)}&date=${encodeURIComponent(dateVal)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'availability check failed');
+      renderSlots(data.slots || []);
+    } catch (err) {
+      slotsWrap.innerHTML = '<p class="updated-badge">Couldn’t check availability right now — please try again in a moment.</p>';
+    }
+  }
+
+  function renderSlots(slots) {
+    slotsWrap.innerHTML = '';
+    if (!slots.length) {
+      slotsWrap.innerHTML = '<p class="updated-badge">No slots left for this day — try another date.</p>';
+      return;
+    }
+    slots.forEach(label => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'slot-btn';
       btn.textContent = label;
-      const slotKey = `${dateVal}_${label}`;
-      if (takenSlots.has(slotKey)) { btn.classList.add('taken'); btn.disabled = true; }
       btn.addEventListener('click', () => {
         slotsWrap.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
@@ -266,9 +276,7 @@ function initBooking() {
         updateSummary();
       });
       slotsWrap.appendChild(btn);
-      t += duration / 60;
-    }
-    if (!slotsWrap.children.length) slotsWrap.innerHTML = '<p class="updated-badge">No slots of this length fit before closing — try Follow-up or Discovery Call.</p>';
+    });
   }
 
   function updateSummary() {
@@ -283,10 +291,25 @@ function initBooking() {
     }
   }
 
-  serviceSel.addEventListener('change', buildSlots);
-  dateInput.addEventListener('change', buildSlots);
+  async function checkPackageCredit() {
+    const service = serviceSel.value;
+    const email = emailInput.value.trim();
+    creditBanner.classList.remove('show');
+    if (!service || !email || !email.includes('@')) return;
+    try {
+      const res = await fetch(`/api/packages/credit?email=${encodeURIComponent(email)}&service=${encodeURIComponent(service)}`);
+      const data = await res.json();
+      creditBanner.classList.toggle('show', !!data.available);
+    } catch (err) {
+      // silent — this is a nice-to-have banner, not authoritative (the server re-checks on submit)
+    }
+  }
 
-  form.addEventListener('submit', (e) => {
+  serviceSel.addEventListener('change', () => { buildSlots(); checkPackageCredit(); });
+  dateInput.addEventListener('change', buildSlots);
+  emailInput.addEventListener('blur', checkPackageCredit);
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const service = serviceSel.value;
     const dateVal = dateInput.value;
@@ -298,34 +321,99 @@ function initBooking() {
     if (!service || !dateVal || !selectedSlot) { showToast('Please choose a service, date and time'); return; }
     if (!name || !email) { showToast('Please add your name and email'); return; }
 
-    const slotKey = `${dateVal}_${selectedSlot}`;
-    takenSlots.add(slotKey);
-    buildSlots();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Booking…';
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service, date: dateVal, time: selectedSlot, name, email, phone, notes })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'booking failed');
 
-    const niceDate = new Date(dateVal + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    const subject = `Appointment request: ${service} — ${niceDate} ${selectedSlot}`;
-    const body = [
-      `New appointment request via valereflexology.co.uk`,
-      ``,
-      `Service: ${service}`,
-      `Requested date: ${niceDate}`,
-      `Requested time: ${selectedSlot}`,
-      ``,
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Phone: ${phone || '—'}`,
-      ``,
-      `Notes: ${notes || '—'}`
-    ].join('\n');
-    const mailto = `mailto:kim@valereflexology.co.uk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    if (confirmPanel) {
-      confirmPanel.classList.add('show');
-      confirmPanel.querySelector('.js-confirm-details').innerHTML = `<strong>${escapeHtml(service)}</strong><br>${niceDate} at ${selectedSlot}<br>${escapeHtml(name)} · ${escapeHtml(email)}`;
-      confirmPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (data.status === 'confirmed') {
+        const niceDate = new Date(dateVal + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        if (confirmPanel) {
+          confirmPanel.classList.add('show');
+          confirmPanel.querySelector('.js-confirm-details').innerHTML = `<strong>${escapeHtml(service)}</strong><br>${niceDate} at ${selectedSlot}<br>${escapeHtml(name)} · ${escapeHtml(email)}`;
+          confirmPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        form.reset();
+        buildSlots();
+      } else if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+        return;
+      }
+    } catch (err) {
+      showToast(err.message || 'Something went wrong — please try again');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Book this appointment';
     }
-    window.location.href = mailto;
   });
+
+  initBookingReturn(confirmPanel);
+  initPackPurchase();
+}
+
+/* Handles landing back on booking.html after a Stripe redirect (paid/cancelled). */
+function initBookingReturn(confirmPanel) {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('paid') === '1' && confirmPanel) {
+    confirmPanel.classList.add('show');
+    confirmPanel.querySelector('.js-confirm-details').innerHTML = 'Your payment went through — you’ll receive a calendar invite by email shortly.';
+    confirmPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (params.get('cancelled') === '1') {
+    const notice = document.querySelector('.js-cancelled-notice');
+    if (notice) notice.hidden = false;
+  }
+}
+
+/* ---------------- Session pack purchase ---------------- */
+function initPackPurchase() {
+  const buyForm = document.querySelector('.js-pack-buy-form');
+  if (!buyForm) return;
+  document.querySelectorAll('.js-pack-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      buyForm.querySelector('[name="pack_type"]').value = btn.dataset.pack;
+      buyForm.classList.add('show');
+      buyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+  buyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pack_type = buyForm.querySelector('[name="pack_type"]').value;
+    const name = buyForm.querySelector('[name="name"]').value.trim();
+    const email = buyForm.querySelector('[name="email"]').value.trim();
+    const phone = buyForm.querySelector('[name="phone"]').value.trim();
+    if (!pack_type) { showToast('Please choose a pack above first'); return; }
+    if (!name || !email) { showToast('Please add your name and email'); return; }
+    const submitBtn = buyForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Redirecting…';
+    try {
+      const res = await fetch('/api/packages/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pack_type, name, email, phone })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'checkout failed');
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      showToast(err.message || 'Something went wrong — please try again');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Continue to payment';
+    }
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pack_paid') === '1') {
+    showToast('Pack purchased — you can now book sessions against it at any time');
+  } else if (params.get('pack_cancelled') === '1') {
+    showToast('Pack purchase cancelled');
+  }
 }
 
 /* ---------------- Contact form (mailto fallback, no backend required) ---------------- */

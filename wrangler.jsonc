@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "valereflex",
+  "compatibility_date": "2026-08-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "main": "src/index.ts",
+  "assets": {
+    "directory": "site",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "valereflex-db",
+      "database_id": "3a41fd29-833b-4265-b618-78d205541dd9"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "MS_TOKENS",
+      "id": "0d4853831d3d4d688fd35e4f130eb9c5"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "vars": {
+    "SITE_ORIGIN": "https://www.valereflexology.co.uk",
+    "SIX_FOLLOWUP_PACK_PENCE": "24000",
+    "INITIAL_PLUS_FIVE_PACK_PENCE": "26000"
+  }
+}

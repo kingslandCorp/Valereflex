@@ -26,7 +26,8 @@
   <div class="container grid-2" style="align-items:start;">
 
     <form class="card js-booking-form" novalidate>
-      <div class="notice">Fields marked with the service and time are required. You'll be asked to send a confirmation email to Kim as the final step.</div>
+      <div class="notice">Choose a service, date and time. Availability is checked live against Kim's diary — paid services are confirmed instantly once payment goes through, and the free discovery call confirms straight away.</div>
+      <div class="notice cancelled js-cancelled-notice" hidden>Your payment was cancelled, so this slot wasn't booked — feel free to try again.</div>
 
       <div class="field full">
         <label for="service">Service</label>
@@ -50,6 +51,8 @@
         <div class="booking-summary js-summary"></div>
       </div>
 
+      <div class="notice success pack-credit-banner js-pack-credit-banner">You have a session pack with credit remaining — this booking will use one session from your pack, no payment needed.</div>
+
       <div class="form-grid" style="margin-top:24px;">
         <div class="field">
           <label for="name">Full name</label>
@@ -69,11 +72,11 @@
         </div>
       </div>
 
-      <button class="btn btn-gold" type="submit">Request this appointment</button>
+      <button class="btn btn-gold js-booking-submit" type="submit">Book this appointment</button>
 
       <div class="confirm-panel js-confirm-panel" style="margin-top:22px;">
         <div class="notice success">
-          <strong>Almost there.</strong> Your email app should now be open with the details below, ready to send to Kim. Sending it confirms your request — Kim will reply to confirm your slot.
+          <strong>You're booked.</strong> You'll receive a calendar invite by email confirming your slot with Kim.
           <div class="js-confirm-details" style="margin-top:10px;"></div>
         </div>
       </div>
@@ -89,9 +92,35 @@
           <li>Wear comfortable clothes you can roll up to the knee.</li>
         </ul>
       </div>
+      <div class="card" id="pack-purchase" style="margin-bottom:24px;">
+        <h3 class="mt-0">Buy a session pack</h3>
+        <p>Pay once, book each session whenever suits you — your credit is held against your email address.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+          <button type="button" class="btn btn-outline on-light js-pack-btn" data-pack="six_followup" data-label="Six Follow-up Session Pack (£240)">Six Follow-up Pack — £240</button>
+          <button type="button" class="btn btn-outline on-light js-pack-btn" data-pack="initial_plus_five" data-label="Initial Consult + 5 Follow-ups Pack (£260)">Initial + 5 Pack — £260</button>
+        </div>
+        <form class="pack-buy-form js-pack-buy-form" novalidate>
+          <input type="hidden" name="pack_type">
+          <div class="form-grid">
+            <div class="field">
+              <label for="pack-name">Full name</label>
+              <input type="text" id="pack-name" name="name" required>
+            </div>
+            <div class="field">
+              <label for="pack-email">Email</label>
+              <input type="email" id="pack-email" name="email" required>
+            </div>
+            <div class="field">
+              <label for="pack-phone">Phone</label>
+              <input type="tel" id="pack-phone" name="phone">
+            </div>
+          </div>
+          <button class="btn btn-gold" type="submit">Continue to payment</button>
+        </form>
+      </div>
       <div class="card" style="background: var(--teal-mist); border:none;">
         <h3 class="mt-0">How booking works on this site</h3>
-        <p style="margin-bottom:0;">This form checks availability against the slots shown, then prepares an email to Kim with everything filled in — nothing gets lost in translation. For a live, always-up-to-date calendar that clients can book instantly (and that syncs with Kim's diary), this can be connected to a booking platform such as Wix Bookings, Fresha or Acuity.</p>
+        <p style="margin-bottom:0;">Availability is checked live against Kim's Outlook diary, so what you see here is genuinely free. Paid services are confirmed the moment payment completes; the free discovery call and any session booked against a pack you've already bought confirm instantly with no payment step.</p>
       </div>
     </div>
   </div>

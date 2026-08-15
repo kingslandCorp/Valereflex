@@ -1,0 +1,16 @@
+{
+  "name": "valereflex",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 execute valereflex-db --file=./schema.sql",
+    "db:migrate:remote": "wrangler d1 execute valereflex-db --file=./schema.sql --remote"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

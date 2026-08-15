@@ -286,6 +286,11 @@ textarea { resize: vertical; min-height: 100px; }
   background: var(--bg-alt); border: 1px solid var(--taupe-line); margin-bottom: 20px;
 }
 .notice.success { background: #E4EEE3; border-color: #A9C7A3; color: #2B4A28; }
+.notice.cancelled { background: #F3E3E3; border-color: #D9A6A6; color: #6B2B2B; }
+.pack-credit-banner { display: none; }
+.pack-credit-banner.show { display: block; }
+.pack-buy-form { display: none; margin-top: 16px; }
+.pack-buy-form.show { display: block; }
 
 /* ---------------- News / social cards ---------------- */
 .news-card { display: flex; flex-direction: column; gap: 12px; }
