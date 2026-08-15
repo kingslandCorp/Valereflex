@@ -28,34 +28,20 @@
     </div>
     <div class="hero-art">
       <div class="glow"></div>
-      <svg viewBox="0 0 360 460" xmlns="http://www.w3.org/2000/svg">
-        <g class="foot-outline">
-          <path d="M100,60 C140,60 165,110 168,180 C171,250 178,300 176,360 C174,420 145,450 100,450 C55,450 26,420 24,360 C22,300 29,250 32,180 C35,110 60,60 100,60 Z"/>
-          <circle cx="60" cy="55" r="9"/>
-          <circle cx="82" cy="42" r="11"/>
-          <circle cx="106" cy="38" r="12"/>
-          <circle cx="130" cy="44" r="10"/>
-          <circle cx="150" cy="58" r="8"/>
-        </g>
-        <g class="foot-outline" transform="translate(360,0) scale(-1,1)">
-          <path d="M100,60 C140,60 165,110 168,180 C171,250 178,300 176,360 C174,420 145,450 100,450 C55,450 26,420 24,360 C22,300 29,250 32,180 C35,110 60,60 100,60 Z"/>
-          <circle cx="60" cy="55" r="9"/>
-          <circle cx="82" cy="42" r="11"/>
-          <circle cx="106" cy="38" r="12"/>
-          <circle cx="130" cy="44" r="10"/>
-          <circle cx="150" cy="58" r="8"/>
-        </g>
-      </svg>
+      <img class="hero-feet hero-logo" src="images/logo-mark.png" alt="Vale Reflexology logo" width="383" height="492">
     </div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Why Reflexology</span>
-      <h2>Do you suffer from stress, sleep, digestion or similar health issues?</h2>
-      <p class="lede">Reflexology is an ancient holistic therapy that promotes deep relaxation and helps restore your body's natural balance. If you have a specific health concern in mind, a free discovery call is a gentle way to explore how reflexology could help.</p>
+    <div class="grid-2" style="align-items:center; margin-bottom:48px;">
+      <div class="section-head" style="margin-bottom:0;">
+        <span class="eyebrow">Why Reflexology</span>
+        <h2>Do you suffer from stress, sleep, digestion or similar health issues?</h2>
+        <p class="lede">Reflexology is an ancient holistic therapy that promotes deep relaxation and helps restore your body's natural balance. If you have a specific health concern in mind, a free discovery call is a gentle way to explore how reflexology could help.</p>
+      </div>
+      <img src="images/feet-treatment.jpg" alt="Close-up of a reflexology treatment, working both feet" style="width:100%; height:auto; border-radius:var(--radius); box-shadow:var(--shadow);">
     </div>
     <div class="grid-2">
       <div class="card reveal">
@@ -92,30 +78,30 @@
 
 <section class="section section-alt">
   <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">The Duopody Map</span>
-      <h2>Both feet, treated together</h2>
-      <p class="lede">"Duo" means two, "pody" means feet. Duopody reflexology treats both feet at the same time — each system in the body is reflected in the feet, and each foot can also represent pairs in life, such as past and present. Hover or tap a point on the map to see what it relates to.</p>
-    </div>
     <div class="map-explore">
-      <svg viewBox="0 0 220 480" xmlns="http://www.w3.org/2000/svg" style="max-width:280px; margin:0 auto; display:block;">
-        <g class="foot-outline">
-          <path d="M110,60 C150,60 178,112 180,182 C182,252 190,302 187,362 C184,422 155,452 110,452 C65,452 36,422 33,362 C30,302 38,252 40,182 C42,112 70,60 110,60 Z"/>
-          <circle cx="68" cy="55" r="9"/>
-          <circle cx="90" cy="42" r="10.5"/>
-          <circle cx="114" cy="38" r="11.5"/>
-          <circle cx="138" cy="44" r="9.5"/>
-          <circle cx="158" cy="58" r="7.5"/>
-        </g>
-        <circle class="zone-dot" data-zone="head" cx="110" cy="70" tabindex="0" aria-label="Head and sinuses zone"></circle>
-        <circle class="zone-dot" data-zone="chest" cx="108" cy="150" tabindex="0" aria-label="Chest and lungs zone"></circle>
-        <circle class="zone-dot" data-zone="digestion" cx="95" cy="230" tabindex="0" aria-label="Digestive system zone"></circle>
-        <circle class="zone-dot" data-zone="kidneys" cx="122" cy="270" tabindex="0" aria-label="Kidneys and balance zone"></circle>
-        <circle class="zone-dot" data-zone="spine" cx="46" cy="255" tabindex="0" aria-label="Spine and nerves zone"></circle>
-        <circle class="zone-dot" data-zone="hormones" cx="105" cy="400" tabindex="0" aria-label="Hormonal balance zone"></circle>
-      </svg>
-      <div class="map-info card">
-        <span class="map-hint">HOVER OR TAP A GOLD POINT</span>
+      <div class="section-head" style="margin-bottom:0; max-width:none;">
+        <span class="eyebrow">The Duopody Map</span>
+        <h2>Both feet, treated together</h2>
+        <p class="lede">"Duo" means two, "pody" means feet. Duopody reflexology treats both feet at the same time — each system in the body is reflected in the feet, and each foot can also represent pairs in life, such as past and present. Hover or tap a point on the map to see what it relates to.</p>
+      </div>
+      <div class="map-svg-wrap" style="max-width:170px; margin:0 auto; position:relative;">
+        <img src="images/foot-single.png" alt="Outline of a single foot used as a reflexology zone map" width="451" height="960" style="width:100%; height:auto; display:block;">
+        <svg viewBox="0 0 451 960" style="position:absolute; inset:0; width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+          <circle class="zone-dot" data-zone="head" cx="300" cy="75" tabindex="0" aria-label="Head and sinuses zone"></circle>
+          <circle class="zone-dot" data-zone="chest" cx="215" cy="250" tabindex="0" aria-label="Chest and solar plexus zone"></circle>
+          <circle class="zone-dot" data-zone="lung" cx="110" cy="225" tabindex="0" aria-label="Lungs and shoulders zone"></circle>
+          <circle class="zone-dot" data-zone="heart" cx="235" cy="275" tabindex="0" aria-label="Heart zone"></circle>
+          <circle class="zone-dot" data-zone="liver" cx="310" cy="365" tabindex="0" aria-label="Liver and gallbladder zone"></circle>
+          <circle class="zone-dot" data-zone="kidneys" cx="200" cy="430" tabindex="0" aria-label="Kidneys and balance zone"></circle>
+          <circle class="zone-dot" data-zone="digestion" cx="285" cy="515" tabindex="0" aria-label="Stomach and digestive system zone"></circle>
+          <circle class="zone-dot" data-zone="gut" cx="115" cy="605" tabindex="0" aria-label="Large intestine zone"></circle>
+          <circle class="zone-dot" data-zone="spine" cx="295" cy="570" tabindex="0" aria-label="Spine and nerves zone"></circle>
+          <circle class="zone-dot" data-zone="bladder" cx="210" cy="670" tabindex="0" aria-label="Bladder zone"></circle>
+          <circle class="zone-dot" data-zone="hormones" cx="205" cy="820" tabindex="0" aria-label="Hormonal balance zone"></circle>
+        </svg>
+      </div>
+      <div class="map-info card card-tight">
+        <span class="map-hint">HOVER OR TAP A GREEN POINT</span>
         <h3 class="cond-name">Head &amp; Sinuses</h3>
         <p class="cond-text mt-0">The tips of the toes mirror the head, brain and sinuses — a common area of focus for tension headaches and migraines.</p>
       </div>
