@@ -89,12 +89,8 @@ const ZONE_INFO = {
   head: { name: 'Head & Sinuses', text: 'The tips of the toes mirror the head, brain and sinuses — a common area of focus for tension headaches and migraines.' },
   chest: { name: 'Chest & Solar Plexus', text: 'The centre of the ball of the foot reflects the chest and solar plexus, often worked to ease tension and encourage a full, relaxed breath.' },
   lung: { name: 'Lungs & Shoulders', text: 'Just below the toes on the outer edge, this zone reflects the lungs and shoulders, often worked to ease tightness through the chest and upper back.' },
-  heart: { name: 'Heart', text: 'Sitting just inside the lung zone, the heart reflex is linked to circulation and is often included to support a sense of calm.' },
-  liver: { name: 'Liver & Gallbladder', text: 'On the outer sole, this zone reflects the liver and gallbladder, key organs for digestion and the body’s natural detoxification.' },
-  digestion: { name: 'Stomach & Digestive System', text: 'The centre of the arch reflects the stomach and digestive system, a key area for clients managing IBS or general digestive discomfort.' },
-  gut: { name: 'Large Intestine', text: 'Tracing across the midfoot, this zone reflects the large intestine, often worked alongside the stomach zone for digestive support.' },
-  bladder: { name: 'Bladder', text: 'Toward the inner heel, the bladder reflex is linked to fluid balance and is often worked alongside the kidney zone.' },
   kidneys: { name: 'Kidneys & Balance', text: 'The centre of the foot relates to the kidneys and adrenal glands, linked to energy levels and the body\u2019s stress response.' },
+  digestion: { name: 'Stomach & Digestive System', text: 'The centre of the arch reflects the stomach and digestive system, a key area for clients managing IBS or general digestive discomfort.' },
   spine: { name: 'Spine & Nerves', text: 'The inner edge of the foot traces the spine, from neck to lower back — useful when working with back and neck pain.' },
   hormones: { name: 'Hormonal Balance', text: 'The ankle area corresponds to the reproductive and hormonal system, often a focus for PMS, cycles and menopause support.' }
 };
@@ -119,11 +115,19 @@ function initFootMap() {
 }
 
 /* ---------------- Weekly reflexology news + social sharing ---------------- */
-const NEWS_QUERY = 'reflexology OR "foot health" OR "holistic wellbeing"';
+const NEWS_QUERY = '"reflexology" OR "reflexologist"';
+// Google News pads sparse results with unrelated filler rather than returning nothing — this is
+// the actual guard against off-topic stories slipping through, not the search query itself.
+const RELEVANCE_PATTERN = /reflexolog/i;
+// Crime/court stories occasionally mention "reflexology" in passing (e.g. an assault that
+// happened during a session) — these must never reach a one-click "Share to Facebook" button,
+// so they're excluded even if they'd otherwise pass the relevance check above.
+const EXCLUDE_PATTERN = /assault|abuse|rape|sex offen|paedophil|pedophil|arrest|charged|court|jailed|prison|sentenc|guilty|convicted|crime|murder|attack|police|stalk|harass/i;
+const MIN_RELEVANT_ITEMS = 2;
 const FALLBACK_ARTICLES = [
-  { title: 'Why reflexology sessions are becoming part of weekly self-care routines', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'More clients are booking reflexology on a regular schedule, rather than as a one-off treat, to support ongoing stress management and sleep.' },
-  { title: 'The link between foot health and everyday wellbeing', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'Looking after the feet supports posture, circulation and balance — reflexology sessions are a relaxing way to build this into your routine.' },
-  { title: 'Understanding holistic therapies alongside conventional care', source: 'Evergreen tip', link: 'https://www.valereflexology.co.uk', summary: 'Reflexology is increasingly used alongside, not instead of, conventional healthcare — supporting relaxation and general wellbeing.' }
+  { title: 'Why reflexology sessions are becoming part of weekly self-care routines', source: 'Evergreen tip', link: 'https://www.valereflexology.com', summary: 'More clients are booking reflexology on a regular schedule, rather than as a one-off treat, to support ongoing stress management and sleep.' },
+  { title: 'The link between foot health and everyday wellbeing', source: 'Evergreen tip', link: 'https://www.valereflexology.com', summary: 'Looking after the feet supports posture, circulation and balance — reflexology sessions are a relaxing way to build this into your routine.' },
+  { title: 'Understanding holistic therapies alongside conventional care', source: 'Evergreen tip', link: 'https://www.valereflexology.com', summary: 'Reflexology is increasingly used alongside, not instead of, conventional healthcare — supporting relaxation and general wellbeing.' }
 ];
 
 function initNews() {
@@ -138,14 +142,19 @@ function initNews() {
 
 async function fetchWeeklyNews(list, updatedBadge) {
   list.innerHTML = '<p><span class="spinner"></span>&nbsp; Fetching this week\u2019s reflexology &amp; wellbeing stories\u2026</p>';
-  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(NEWS_QUERY)}+when:7d&hl=en-GB&gl=GB&ceid=GB:en`;
+  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(NEWS_QUERY)}+when:90d&hl=en-GB&gl=GB&ceid=GB:en`;
   const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
   try {
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error('feed unavailable');
     const data = await res.json();
     if (!data.items || !data.items.length) throw new Error('no items');
-    renderNews(list, data.items.slice(0, 6).map(item => ({
+    const relevant = data.items.filter(item => {
+      const text = item.title + ' ' + item.description;
+      return (RELEVANCE_PATTERN.test(item.title) || RELEVANCE_PATTERN.test(item.description)) && !EXCLUDE_PATTERN.test(text);
+    });
+    if (relevant.length < MIN_RELEVANT_ITEMS) throw new Error('not enough relevant items');
+    renderNews(list, relevant.slice(0, 6).map(item => ({
       title: stripTags(item.title),
       source: (item.title.match(/- (.*?)$/) || [])[1] || 'Google News',
       link: item.link,

@@ -110,7 +110,7 @@ export async function getBusyBlocks(
   const params = new URLSearchParams({
     startDateTime: dayStartLocal,
     endDateTime: dayEndLocal,
-    $select: 'start,end,subject',
+    $select: 'start,end,subject,isAllDay',
     $top: '50',
   });
   const res = await graphFetch(env, `/me/calendarview?${params.toString()}`);
@@ -118,8 +118,13 @@ export async function getBusyBlocks(
     const errText = await res.text().catch(() => '');
     throw new Error(`Graph calendarview ${res.status}: ${errText}`);
   }
-  const data = (await res.json()) as { value: Array<{ start: { dateTime: string }; end: { dateTime: string } }> };
-  return data.value.map((ev) => ({ start: ev.start.dateTime, end: ev.end.dateTime }));
+  const data = (await res.json()) as {
+    value: Array<{ start: { dateTime: string }; end: { dateTime: string }; isAllDay?: boolean }>;
+  };
+  // All-day entries (birthdays, holidays, anything synced onto the calendar as all-day) span the
+  // whole day in Graph's data and must never count as "busy" — otherwise one innocuous all-day
+  // entry blocks every real appointment slot for that entire day.
+  return data.value.filter((ev) => !ev.isAllDay).map((ev) => ({ start: ev.start.dateTime, end: ev.end.dateTime }));
 }
 
 export interface CreateEventOpts {
