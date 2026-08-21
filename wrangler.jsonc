@@ -29,6 +29,7 @@
   "vars": {
     "SITE_ORIGIN": "https://www.valereflexology.com",
     "SIX_FOLLOWUP_PACK_PENCE": "24000",
-    "INITIAL_PLUS_FIVE_PACK_PENCE": "26000"
+    "INITIAL_PLUS_FIVE_PACK_PENCE": "26000",
+    "KIM_EMAIL": "daviskingsland@outlook.com"
   }
 }

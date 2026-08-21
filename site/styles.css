@@ -207,7 +207,7 @@ a { color: var(--teal); }
 /* ---------------- Grid / cards ---------------- */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .media-row { align-items: stretch; }
-.media-row img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-row img { width: 100%; max-height: 440px; object-fit: cover; display: block; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 @media (max-width: 900px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
@@ -300,10 +300,11 @@ textarea { resize: vertical; min-height: 100px; }
 .pack-buy-form.show { display: block; }
 
 /* ---------------- News / social cards ---------------- */
-.news-card { display: flex; flex-direction: column; gap: 12px; }
+.news-card { display: flex; flex-direction: column; gap: 14px; min-height: 260px; padding: 32px; }
 .news-card .src { font-family: var(--font-mono); font-size: 0.72rem; color: var(--taupe); text-transform: uppercase; letter-spacing: 0.05em; }
-.news-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.news-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
 .news-actions .btn { padding: 9px 16px; font-size: 0.82rem; }
+.news-closing-mark { width: 100%; max-width: 140px; margin: 0 auto; opacity: 0.9; }
 .refresh-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
 .updated-badge { font-family: var(--font-mono); font-size: 0.78rem; color: var(--taupe); }
 .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--taupe-line); border-top-color: var(--teal); animation: spin 0.8s linear infinite; display: inline-block; }

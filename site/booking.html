@@ -8,6 +8,27 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="images/favicon-512.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.valereflexology.com/booking.html">
+<meta name="theme-color" content="#1B3A56">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vale Reflexology">
+<meta property="og:locale" content="en_GB">
+<meta property="og:url" content="https://www.valereflexology.com/booking.html">
+<meta property="og:title" content="Book an Appointment | Vale Reflexology">
+<meta property="og:description" content="Book a reflexology appointment with Kim Davis at Vale Reflexology, Vale of Glamorgan. Choose a service, date and time that suits you.">
+<meta property="og:image" content="https://www.valereflexology.com/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Book an Appointment | Vale Reflexology">
+<meta name="twitter:description" content="Book a reflexology appointment with Kim Davis at Vale Reflexology, Vale of Glamorgan. Choose a service, date and time that suits you.">
+<meta name="twitter:image" content="https://www.valereflexology.com/images/og-image.jpg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -91,6 +112,31 @@
           <li>Home visits available across the Vale of Glamorgan.</li>
           <li>Wear comfortable clothes you can roll up to the knee.</li>
         </ul>
+      </div>
+      <div class="card" id="contact" style="margin-bottom:24px;">
+        <h3 class="mt-0">Have a question first?</h3>
+        <p>Not sure which service is right for you, or asking about a gift voucher? Send a message below, or book the free 15-minute Discovery Call above and talk it through with Kim directly.</p>
+        <form class="js-contact-form" novalidate>
+          <div class="field">
+            <label for="c-name">Name</label>
+            <input type="text" id="c-name" name="name" required>
+          </div>
+          <div class="field">
+            <label for="c-email">Email</label>
+            <input type="email" id="c-email" name="email" required>
+          </div>
+          <div class="field">
+            <label for="c-subject">Subject</label>
+            <input type="text" id="c-subject" name="subject">
+          </div>
+          <div class="field">
+            <label for="c-message">Message</label>
+            <textarea id="c-message" name="message" required></textarea>
+          </div>
+          <button class="btn btn-teal" type="submit">Send message</button>
+          <div class="notice success js-contact-notice" style="margin-top:16px; display:none;">Thanks — your email app should now be open with your message ready to send.</div>
+          <style>.js-contact-notice.show{display:block !important;}</style>
+        </form>
       </div>
       <div class="card" id="pack-purchase" style="margin-bottom:24px;">
         <h3 class="mt-0">Buy a session pack</h3>
