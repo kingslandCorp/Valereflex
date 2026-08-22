@@ -4,6 +4,8 @@ import { handleCreateBooking, sweepExpiredHolds } from './routes/bookings';
 import { handlePackageCredit, handlePackageCheckout } from './routes/packages';
 import { handleMicrosoftAuthStart, handleMicrosoftAuthCallback } from './routes/msAuth';
 import { handleStripeWebhook } from './routes/stripeWebhook';
+import { handleTestSendEmails } from './routes/testEmail';
+import { handleAdminCancelBooking, handleAdminListEvents, handleAdminSendCalendarSummary } from './routes/admin';
 import { errorResponse } from './lib/http';
 
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response> {
@@ -17,6 +19,10 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (pathname === '/api/auth/microsoft/start' && method === 'GET') return handleMicrosoftAuthStart(env, url);
   if (pathname === '/api/auth/microsoft/callback' && method === 'GET') return handleMicrosoftAuthCallback(env, url);
   if (pathname === '/api/stripe/webhook' && method === 'POST') return handleStripeWebhook(request, env);
+  if (pathname === '/api/test-send-emails' && method === 'GET') return handleTestSendEmails(env, url);
+  if (pathname === '/api/admin/cancel-booking' && method === 'GET') return handleAdminCancelBooking(env, url);
+  if (pathname === '/api/admin/list-events' && method === 'GET') return handleAdminListEvents(env, url);
+  if (pathname === '/api/admin/send-calendar-summary' && method === 'GET') return handleAdminSendCalendarSummary(env, url);
 
   return errorResponse('not found', 404);
 }
@@ -40,6 +46,13 @@ export default {
 
     if (url.pathname.startsWith('/api/')) {
       return handleApi(request, env, url);
+    }
+
+    // html_handling is "none" (see wrangler.jsonc) so every other page serves its exact .html file
+    // with no redirect — but that also disables the implicit "/" -> "/index.html" mapping, so do it
+    // explicitly here for the one directory-style path the site actually uses.
+    if (url.pathname === '/') {
+      return env.ASSETS.fetch(new Request(new URL('/index.html', url), request));
     }
 
     return env.ASSETS.fetch(request);

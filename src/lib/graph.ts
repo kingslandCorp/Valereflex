@@ -159,3 +159,57 @@ export async function createCalendarEvent(env: Env, opts: CreateEventOpts): Prom
   const data = (await res.json()) as { id: string };
   return data.id;
 }
+
+export interface EventSummary {
+  id: string;
+  subject: string;
+  start: string;
+  end: string;
+  isAllDay: boolean;
+  attendees: { name: string; email: string }[];
+}
+
+// Read-only listing for admin inspection — includes attendee info that getBusyBlocks deliberately omits.
+export async function listEvents(env: Env, dayStartLocal: string, dayEndLocal: string): Promise<EventSummary[]> {
+  const params = new URLSearchParams({
+    startDateTime: dayStartLocal,
+    endDateTime: dayEndLocal,
+    $select: 'id,subject,start,end,isAllDay,attendees',
+    $top: '250',
+  });
+  const res = await graphFetch(env, `/me/calendarview?${params.toString()}`);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Graph calendarview ${res.status}: ${errText}`);
+  }
+  const data = (await res.json()) as {
+    value: Array<{
+      id: string;
+      subject: string;
+      start: { dateTime: string };
+      end: { dateTime: string };
+      isAllDay?: boolean;
+      attendees?: Array<{ emailAddress: { name?: string; address?: string } }>;
+    }>;
+  };
+  return data.value.map((ev) => ({
+    id: ev.id,
+    subject: ev.subject,
+    start: ev.start.dateTime,
+    end: ev.end.dateTime,
+    isAllDay: !!ev.isAllDay,
+    attendees: (ev.attendees ?? []).map((a) => ({
+      name: a.emailAddress.name ?? '',
+      email: a.emailAddress.address ?? '',
+    })),
+  }));
+}
+
+export async function deleteCalendarEvent(env: Env, eventId: string): Promise<void> {
+  const res = await graphFetch(env, `/me/events/${eventId}`, { method: 'DELETE' });
+  // 404 means it's already gone (or was never created) — treat as success either way.
+  if (!res.ok && res.status !== 404) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Graph delete event ${res.status}: ${errText}`);
+  }
+}

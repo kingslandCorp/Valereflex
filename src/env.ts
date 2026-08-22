@@ -12,4 +12,6 @@ export interface Env {
   MS_CLIENT_ID?: string;
   MS_CLIENT_SECRET?: string;
   SETUP_KEY?: string;
+  RESEND_API_KEY?: string;
+  KIM_EMAIL?: string;
 }

@@ -2,7 +2,9 @@ import type { Env } from '../env';
 import { getBusyBlocks } from './graph';
 
 export const CLINIC_START = 9.5; // 9:30am
-export const CLINIC_END = 15; // 3:00pm
+export const CLINIC_END = 15; // 3:00pm — every appointment must finish by this time
+export const CLINIC_LATEST_START = 14; // 2:00pm — no appointment may start later than this, regardless of duration
+const SLOT_STEP_HOURS = 0.25; // offer a start time every 15 minutes, independent of any service's own duration
 
 export interface ServiceDef {
   duration: number; // minutes
@@ -34,10 +36,11 @@ function toTimeLabel(t: number): string {
 
 function candidateSlots(duration: number): string[] {
   const slots: string[] = [];
+  const latestStart = Math.min(CLINIC_END - duration / 60, CLINIC_LATEST_START);
   let t = CLINIC_START;
-  while (t + duration / 60 <= CLINIC_END + 0.001) {
+  while (t <= latestStart + 0.001) {
     slots.push(toTimeLabel(t));
-    t += duration / 60;
+    t += SLOT_STEP_HOURS;
   }
   return slots;
 }

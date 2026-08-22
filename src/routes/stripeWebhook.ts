@@ -3,6 +3,7 @@ import { verifyStripeSignature } from '../lib/stripe';
 import { PACK_DEFS } from '../lib/packages';
 import { createCalendarEvent } from '../lib/graph';
 import { SERVICE_DEFS, computeFreeSlots } from '../lib/availability';
+import { sendBookingConfirmationEmails } from '../lib/bookingEmails';
 import { json, errorResponse } from '../lib/http';
 
 interface StripeCheckoutSession {
@@ -25,8 +26,10 @@ interface BookingRow {
   time: string;
   name: string;
   email: string;
+  phone: string | null;
   notes: string | null;
   status: string;
+  price_pence: number;
 }
 
 async function confirmBooking(env: Env, booking: BookingRow): Promise<void> {
@@ -55,6 +58,20 @@ async function confirmBooking(env: Env, booking: BookingRow): Promise<void> {
   )
     .bind(eventId, notes, booking.id)
     .run();
+
+  await sendBookingConfirmationEmails(env, {
+    service: booking.service,
+    date: booking.date,
+    time: booking.time,
+    duration_minutes: def?.duration ?? booking.duration_minutes,
+    name: booking.name,
+    email: booking.email,
+    phone: booking.phone ?? '',
+    notes,
+    price_pence: booking.price_pence,
+    payment_method: 'stripe',
+    booking_id: booking.id,
+  });
 }
 
 function addMinutes(dateStr: string, timeLabel: string, minutes: number): string {

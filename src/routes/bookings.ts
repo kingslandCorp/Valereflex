@@ -3,6 +3,7 @@ import { SERVICE_DEFS, computeFreeSlots } from '../lib/availability';
 import { findAvailablePackage, redeemPackageCredit } from '../lib/packages';
 import { createCalendarEvent } from '../lib/graph';
 import { createCheckoutSession } from '../lib/stripe';
+import { sendBookingConfirmationEmails } from '../lib/bookingEmails';
 import { json, errorResponse } from '../lib/http';
 
 interface BookingBody {
@@ -73,6 +74,10 @@ export async function handleCreateBooking(request: Request, env: Env): Promise<R
     )
       .bind(id, service, def.duration, date, time, name, email, phone, notes, eventId)
       .run();
+    await sendBookingConfirmationEmails(env, {
+      service, date, time, duration_minutes: def.duration, name, email, phone, notes,
+      price_pence: 0, payment_method: 'free', booking_id: id,
+    });
     return json({ status: 'confirmed', booking_id: id });
   }
 
@@ -88,6 +93,10 @@ export async function handleCreateBooking(request: Request, env: Env): Promise<R
         .bind(id, service, def.duration, date, time, name, email, phone, notes, def.pricePence, pkg.id, eventId)
         .run();
       await redeemPackageCredit(env, pkg, def.creditType);
+      await sendBookingConfirmationEmails(env, {
+        service, date, time, duration_minutes: def.duration, name, email, phone, notes,
+        price_pence: def.pricePence, payment_method: 'package_credit', booking_id: id,
+      });
       return json({ status: 'confirmed', booking_id: id });
     }
   }

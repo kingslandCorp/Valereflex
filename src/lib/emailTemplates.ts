@@ -1,0 +1,328 @@
+// Auto-generated from email-templates/*.html — edit those source files, not this one, then regenerate with `node gen-templates.js`.
+export const CLIENT_BOOKING_CONFIRMATION_TEMPLATE = `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Your Vale Reflexology booking is confirmed</title>
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<![endif]-->
+<style>
+  body, table, td { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+  body { margin: 0; padding: 0; width: 100% !important; background: #F5F7FC; }
+  a { color: #2E7FB8; }
+  @media screen and (max-width: 600px) {
+    .w-full { width: 100% !important; }
+    .px-mobile { padding-left: 20px !important; padding-right: 20px !important; }
+    .stack { display: block !important; width: 100% !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background:#F5F7FC;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#F5F7FC;">
+    Your appointment is booked — {{service_name}} on {{formatted_date}} at {{formatted_time}}.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FC;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="w-full" style="max-width:600px; width:100%;">
+
+          <!-- Header / wordmark -->
+          <tr>
+            <td align="center" style="padding: 8px 0 28px;">
+              <img src="https://www.valereflexology.com/images/logo-mark.png" width="52" height="52" alt="Vale Reflexology" style="display:block; margin: 0 auto 10px; border-radius: 10px;">
+              <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 700; color:#1B3A56; letter-spacing: 0.01em;">Vale Reflexology</div>
+              <div style="font-family: 'Courier New', Courier, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color:#6B7290; margin-top: 4px;">Duopody Reflexology &middot; Cowbridge, Vale of Glamorgan</div>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#FFFFFF; border:1px solid rgba(107,114,144,0.22); border-radius: 14px; padding: 0; overflow:hidden;">
+
+              <!-- Confirmed banner -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="background:#EAF3E3; padding: 18px 32px; border-bottom:1px solid rgba(107,114,144,0.18);">
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight:700; color:#3B6B22;">You're booked</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Greeting -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 26px 32px 6px; font-family: Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#232A3D;">
+                    Hi {{client_name}},<br>
+                    Your appointment with Kim is confirmed — here's everything you need.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Booking details -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 18px 32px 4px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FC; border-radius: 10px;">
+                      <tr>
+                        <td style="padding: 20px 22px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color:#232A3D;">
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; width:34%; vertical-align:top;">Service</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{service_name}}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Date</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{formatted_date}}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Time</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{formatted_time}} &middot; {{duration_minutes}} min</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Payment</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{price_line}}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What to expect -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 24px 32px 0;">
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color:#2E7FB8; font-weight:700; margin-bottom: 8px;">What to expect</div>
+                    <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height:1.65; color:#232A3D;">
+                      Duopody reflexology treats both feet at the same time, working pressure points that relate to different systems in the body. Most clients find it deeply relaxing — many doze off. Kim will talk you through anything specific to your session beforehand, so there's nothing to prepare beyond arriving a few minutes early.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What to wear -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 22px 32px 0;">
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color:#2E7FB8; font-weight:700; margin-bottom: 8px;">What to wear</div>
+                    <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height:1.65; color:#232A3D;">
+                      Comfortable, loose clothing you can roll up to the knee. Bare feet, so skip tights on the day if you can. Kim provides everything else.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Getting there -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 22px 32px 26px;">
+                    <div style="text-align:center; font-family: 'Courier New', Courier, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color:#2E7FB8; font-weight:700; margin-bottom: 8px;">Getting there</div>
+                    <div style="text-align:center; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height:1.65; color:#232A3D; margin-bottom:14px;">
+                      <span style="color:#6B7290;">what3words: </span><a href="https://what3words.com/resurgent.nature.known" style="color:#2E7FB8; text-decoration:none; font-weight:700;">///resurgent.nature.known</a>
+                    </div>
+                    <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                      <tr>
+                        <td style="background:#2E7FB8; border-radius: 999px;">
+                          <a href="https://www.google.com/maps/search/?api=1&query=51.435480,-3.409444" style="display:inline-block; padding: 11px 24px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:999px;">&#128205; Open Google Maps pin</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Reschedule note -->
+          <tr>
+            <td class="px-mobile" style="padding: 22px 8px 0; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height:1.6; color:#6B7290; text-align:center;">
+              Need to change or cancel? Just reply to this email or reach Kim directly, and she'll help sort a new time.
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 30px 16px 10px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height:1.7; color:#6B7290;">
+              Vale Reflexology &middot; Cowbridge, Vale of Glamorgan<br>
+              <a href="https://www.valereflexology.com" style="color:#6B7290; text-decoration:underline;">valereflexology.com</a>
+              &nbsp;&middot;&nbsp;
+              Booking ref {{booking_id}}
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+export const KIM_NEW_BOOKING_TEMPLATE = `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>New booking — {{client_name}}</title>
+<!--[if mso]>
+<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<![endif]-->
+<style>
+  body, table, td { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+  body { margin: 0; padding: 0; width: 100% !important; background: #F5F7FC; }
+  a { color: #2E7FB8; }
+  @media screen and (max-width: 600px) {
+    .w-full { width: 100% !important; }
+    .px-mobile { padding-left: 20px !important; padding-right: 20px !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background:#F5F7FC;">
+
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#F5F7FC;">
+    New booking: {{client_name}} — {{service_name}}, {{formatted_date}} at {{formatted_time}}.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FC;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="w-full" style="max-width:600px; width:100%;">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding: 8px 0 24px;">
+              <img src="https://www.valereflexology.com/images/logo-mark.png" width="40" height="40" alt="Vale Reflexology" style="display:block; margin: 0 auto 8px; border-radius: 8px;">
+              <div style="font-family: 'Courier New', Courier, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color:#6B7290;">Vale Reflexology &middot; Booking Notifications</div>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#FFFFFF; border:1px solid rgba(107,114,144,0.22); border-radius: 14px; padding: 0; overflow:hidden;">
+
+              <!-- New booking banner -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="background:#E8EEFB; padding: 18px 32px; border-bottom:1px solid rgba(107,114,144,0.18);">
+                    <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 21px; font-weight:700; color:#1B3A56;">New booking &mdash; {{client_name}}</div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Client details -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 22px 32px 4px;">
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color:#2E7FB8; font-weight:700; margin-bottom: 10px;">Client</div>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color:#232A3D;">
+                      <tr>
+                        <td style="padding: 4px 0; color:#6B7290; width:28%; vertical-align:top;">Name</td>
+                        <td style="padding: 4px 0; font-weight:700;">{{client_name}}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color:#6B7290; vertical-align:top;">Email</td>
+                        <td style="padding: 4px 0;"><a href="mailto:{{client_email}}" style="color:#2E7FB8; text-decoration:none; font-weight:700;">{{client_email}}</a></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color:#6B7290; vertical-align:top;">Phone</td>
+                        <td style="padding: 4px 0; font-weight:700;">{{client_phone}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Booking details -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 20px 32px 4px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FC; border-radius: 10px;">
+                      <tr>
+                        <td style="padding: 20px 22px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color:#232A3D;">
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; width:34%; vertical-align:top;">Service</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{service_name}}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Date</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{formatted_date}}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Time</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{formatted_time}} &middot; {{duration_minutes}} min</td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 5px 0; color:#6B7290; vertical-align:top;">Payment</td>
+                              <td style="padding: 5px 0; font-weight:700;">{{price_line}}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Calendar note -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td class="px-mobile" style="padding: 22px 32px 26px;">
+                    <div style="background:#EAF3E3; border-radius:10px; padding:14px 18px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height:1.6; color:#3B6B22;">
+                      &#128197; This session has been added to your calendar automatically. A calendar invite (.ics) is also attached to this email if you'd like to save it elsewhere.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 26px 16px 10px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height:1.7; color:#6B7290;">
+              Vale Reflexology booking system &middot; Booking ref {{booking_id}}
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+export function renderTemplate(template: string, data: Record<string, string>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => data[key] ?? '');
+}
