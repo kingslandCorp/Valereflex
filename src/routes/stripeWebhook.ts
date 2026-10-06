@@ -61,7 +61,7 @@ export async function confirmBooking(
   try {
     eventId = await createCalendarEvent(env, {
       subject: `${booking.service} — ${booking.name}`,
-      bodyText: `Booked via valereflexology.co.uk\n\nClient: ${booking.name} (${booking.email})\nNotes: ${notes || '—'}`,
+      bodyText: `Booked via valereflexology.com\n\nClient: ${booking.name} (${booking.email})\nNotes: ${notes || '—'}`,
       startLocal: `${booking.date}T${booking.time}:00`,
       endLocal: addMinutes(booking.date, booking.time, def?.duration ?? booking.duration_minutes),
       attendeeEmail: booking.email,

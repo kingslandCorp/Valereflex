@@ -438,7 +438,7 @@ function initContactForm() {
     e.preventDefault();
     const name = form.querySelector('[name="name"]').value.trim();
     const email = form.querySelector('[name="email"]').value.trim();
-    const subject = form.querySelector('[name="subject"]').value.trim() || 'Message from valereflexology.co.uk';
+    const subject = form.querySelector('[name="subject"]').value.trim() || 'Message from valereflexology.com';
     const message = form.querySelector('[name="message"]').value.trim();
     if (!name || !email || !message) { showToast('Please fill in your name, email and message'); return; }
     const body = `${message}\n\n— ${name} (${email})`;

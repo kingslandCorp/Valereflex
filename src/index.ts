@@ -45,8 +45,16 @@ export default {
     // (the bare .com apex, and the .co.uk domain once it's reachable at all) redirects there.
     const CANONICAL_HOST = 'www.valereflexology.com';
     const REDIRECT_HOSTS = new Set(['valereflexology.com', 'valereflexology.co.uk', 'www.valereflexology.co.uk']);
-    if (REDIRECT_HOSTS.has(url.hostname)) {
+    // Any non-canonical production host goes to the canonical one, and any plain-http request to a
+    // production host is upgraded to https in the same single hop (the booking form takes names,
+    // emails and phone numbers, so it must never be usable over http). Local dev hosts
+    // (localhost etc.) are untouched because they match neither condition.
+    const wrongHost = REDIRECT_HOSTS.has(url.hostname);
+    const insecureCanonical = url.hostname === CANONICAL_HOST && url.protocol === 'http:';
+    if (wrongHost || insecureCanonical) {
+      url.protocol = 'https:';
       url.hostname = CANONICAL_HOST;
+      url.port = '';
       return Response.redirect(url.toString(), 301);
     }
 

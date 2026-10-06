@@ -39,21 +39,21 @@ Any static server works (VS Code's "Live Server" extension, `npx serve`, etc.).
 This limitation disappears once the site is deployed, since it'll be served over
 `https://`.
 
-## Deploying to GitHub Pages
+## Deploying
 
-1. Push this folder to a GitHub repository.
-2. Repo **Settings → Pages → Build and deployment** → Source: `Deploy from a branch` → Branch: `main`, folder: `/ (root)`.
-3. The site will be live at `https://<username>.github.io/<repo-name>/` within a minute or two.
+The site is a Cloudflare Worker (static files in `site/` plus the booking API in `src/`).
+Deploy with `npx wrangler deploy` from the repo root.
 
-If you'd rather use a custom domain (e.g. `www.valereflexology.co.uk`), add a
-`CNAME` file containing the domain, and point the domain's DNS at GitHub Pages
-per [GitHub's custom domain docs](https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site).
+**Domains:** the canonical address is `https://www.valereflexology.com`. The bare
+`valereflexology.com`, `valereflexology.co.uk` and `www.valereflexology.co.uk` all 301-redirect to it
+(see `REDIRECT_HOSTS` in `src/index.ts`). Email is deliberately on `valereflexology.co.uk`
+(Resend sending domain + Cloudflare Email Routing for `kim@valereflexology.co.uk`), so don't
+change that domain's DNS email records.
 
-## Before going live — please update
+## Notes
 
-- **Booking/contact email**: `script.js` currently sends appointment requests
-  and contact messages to a placeholder address, `kim@valereflexology.co.uk`.
-  Search for that string (it appears twice) and replace it with Kim's real inbox.
+- **Contact email**: the contact form on the booking page opens the visitor's mail app addressed
+  to `kim@valereflexology.co.uk`, which Cloudflare Email Routing forwards to Kim's inbox.
 - **Social links**: the Facebook/Instagram icons in `footer.html` point to the
   generic `facebook.com` / `instagram.com` homepages — update to Vale
   Reflexology's actual profile URLs once created.

@@ -33,7 +33,7 @@ async function createEventForBooking(
   const endLocal = addMinutes(opts.date, opts.time, opts.duration);
   return createCalendarEvent(env, {
     subject: `${opts.service} — ${opts.name}`,
-    bodyText: `Booked via valereflexology.co.uk\n\nClient: ${opts.name} (${opts.email})\nNotes: ${opts.notes || '—'}`,
+    bodyText: `Booked via valereflexology.com\n\nClient: ${opts.name} (${opts.email})\nNotes: ${opts.notes || '—'}`,
     startLocal,
     endLocal,
     attendeeEmail: opts.email,
