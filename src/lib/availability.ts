@@ -4,7 +4,7 @@ import { getBusyBlocks } from './graph';
 export const CLINIC_START = 9.5; // 9:30am
 export const CLINIC_END = 15; // 3:00pm — every appointment must finish by this time
 export const CLINIC_LATEST_START = 14; // 2:00pm — no appointment may start later than this, regardless of duration
-const SLOT_STEP_HOURS = 0.25; // offer a start time every 15 minutes, independent of any service's own duration
+const SLOT_STEP_HOURS = 1; // hourly slots only, anchored to CLINIC_START (9:30, 10:30, 11:30…)
 
 export interface ServiceDef {
   duration: number; // minutes

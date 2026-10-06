@@ -1,6 +1,8 @@
 import type { Env } from '../env';
 import { deleteCalendarEvent, listEvents } from '../lib/graph';
 import { sendEmail } from '../lib/email';
+import { confirmBooking, type BookingRow as FullBookingRow } from './stripeWebhook';
+import { reconcilePayments } from '../lib/reconcile';
 import { json, errorResponse } from '../lib/http';
 
 interface BookingRow {
@@ -124,4 +126,130 @@ export async function handleAdminSendCalendarSummary(env: Env, url: URL): Promis
     html: buildTableHtml(),
   });
   return json({ sent: result });
+}
+
+// Read-only diagnostic: asks Stripe (with the Worker's own key) what actually happened to every
+// unconfirmed booking's checkout session, which account the key belongs to, and the state of the
+// registered webhook endpoints / recent completed-session events. Never writes anything to Stripe.
+export async function handleAdminStripeCheck(env: Env, url: URL): Promise<Response> {
+  const setupKey = (url.searchParams.get('setup_key') ?? '').trim();
+  const expectedKey = (env.SETUP_KEY ?? '').trim();
+  if (!expectedKey || setupKey !== expectedKey) return errorResponse('forbidden', 403);
+  if (!env.STRIPE_SECRET_KEY) return errorResponse('STRIPE_SECRET_KEY not configured', 500);
+
+  const stripeGet = async (path: string) => {
+    const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+    });
+    return { status: res.status, body: (await res.json().catch(() => null)) as any };
+  };
+
+  const rows = await env.DB.prepare(
+    `SELECT id, name, email, service, date, time, status, price_pence, stripe_session_id, created_at
+     FROM bookings WHERE stripe_session_id IS NOT NULL AND status != 'confirmed' ORDER BY created_at DESC LIMIT 25`
+  ).all<any>();
+
+  const sessions = [];
+  for (const r of rows.results ?? []) {
+    const s = await stripeGet(`checkout/sessions/${r.stripe_session_id}`);
+    sessions.push({
+      booking: { id: r.id, name: r.name, email: r.email, service: r.service, date: r.date, time: r.time, db_status: r.status, created_at: r.created_at },
+      stripe_http: s.status,
+      stripe_status: s.body?.status,
+      payment_status: s.body?.payment_status,
+      amount_total: s.body?.amount_total,
+      payment_intent: s.body?.payment_intent,
+      error: s.body?.error?.message,
+    });
+  }
+
+  const account = await stripeGet('account');
+  const endpoints = await stripeGet('webhook_endpoints?limit=20');
+  const events = await stripeGet('events?type=checkout.session.completed&limit=20');
+
+  return json({
+    key_account: { http: account.status, id: account.body?.id, name: account.body?.business_profile?.name ?? account.body?.settings?.dashboard?.display_name, error: account.body?.error?.message },
+    webhook_endpoints: { http: endpoints.status, error: endpoints.body?.error?.message, list: (endpoints.body?.data ?? []).map((e: any) => ({ id: e.id, url: e.url, status: e.status, events: e.enabled_events })) },
+    completed_events: { http: events.status, error: events.body?.error?.message, list: (events.body?.data ?? []).map((e: any) => ({ id: e.id, created: new Date(e.created * 1000).toISOString(), pending_webhooks: e.pending_webhooks, session: e.data?.object?.id, kind: e.data?.object?.metadata?.kind, booking_id: e.data?.object?.metadata?.booking_id, email: e.data?.object?.customer_details?.email })) },
+    sessions,
+  });
+}
+
+// Recovery for a booking whose payment succeeded but whose webhook never confirmed it. Refuses to
+// act unless Stripe itself reports the checkout session as paid, so it can never confirm an unpaid one.
+export async function handleAdminRecoverBooking(env: Env, url: URL): Promise<Response> {
+  const setupKey = (url.searchParams.get('setup_key') ?? '').trim();
+  const expectedKey = (env.SETUP_KEY ?? '').trim();
+  if (!expectedKey || setupKey !== expectedKey) return errorResponse('forbidden', 403);
+  const bookingId = url.searchParams.get('booking_id');
+  if (!bookingId) return errorResponse('booking_id query param is required');
+  const sendEmails = url.searchParams.get('send_email') !== '0';
+
+  const row = await env.DB.prepare('SELECT * FROM bookings WHERE id = ?').bind(bookingId).first<FullBookingRow & { stripe_session_id: string | null }>();
+  if (!row) return errorResponse('booking not found', 404);
+  if (row.status === 'confirmed') return json({ already_confirmed: true });
+  if (!row.stripe_session_id) return errorResponse('booking has no stripe session', 409);
+
+  const res = await fetch('https://api.stripe.com/v1/checkout/sessions/' + row.stripe_session_id, {
+    headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY },
+  });
+  const session = (await res.json().catch(() => null)) as { payment_status?: string } | null;
+  if (session?.payment_status !== 'paid') return errorResponse('Stripe does not show this session as paid — not confirming', 409);
+
+  await confirmBooking(env, row, { sendEmails, skipConflictNote: true });
+  return json({ recovered: true, booking_id: bookingId, emails_sent: sendEmails });
+}
+
+// Runs the payment reconciler on demand. dry_run=1 only reports what it would do — no calendar
+// events, no emails, no database writes. include_past=1 also considers appointments already gone by.
+export async function handleAdminReconcile(env: Env, url: URL): Promise<Response> {
+  const setupKey = (url.searchParams.get('setup_key') ?? '').trim();
+  const expectedKey = (env.SETUP_KEY ?? '').trim();
+  if (!expectedKey || setupKey !== expectedKey) return errorResponse('forbidden', 403);
+  const report = await reconcilePayments(env, {
+    dryRun: url.searchParams.get('dry_run') === '1',
+    includePast: url.searchParams.get('include_past') === '1',
+    sinceDays: Number(url.searchParams.get('since_days') ?? '7'),
+  });
+  return json(report);
+}
+
+// Webhook endpoint management for the live Stripe account. action=create registers a fresh
+// endpoint for the production URL and returns its one-time signing secret (the caller pipes it
+// straight into `wrangler secret put` without ever displaying it); action=delete removes one
+// endpoint by id. Nothing else in the Stripe account is touched.
+export async function handleAdminStripeWebhook(request: Request, env: Env, url: URL): Promise<Response> {
+  const setupKey = (url.searchParams.get('setup_key') ?? '').trim();
+  const expectedKey = (env.SETUP_KEY ?? '').trim();
+  if (!expectedKey || setupKey !== expectedKey) return errorResponse('forbidden', 403);
+  if (!env.STRIPE_SECRET_KEY) return errorResponse('STRIPE_SECRET_KEY not configured', 500);
+  const auth = { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY };
+  const action = url.searchParams.get('action');
+
+  if (action === 'create') {
+    const body = new URLSearchParams({
+      url: env.SITE_ORIGIN + '/api/stripe/webhook',
+      'enabled_events[0]': 'checkout.session.completed',
+      description: 'Vale Reflexology bookings and packs',
+    });
+    const res = await fetch('https://api.stripe.com/v1/webhook_endpoints', {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+    const data = (await res.json().catch(() => null)) as any;
+    if (!res.ok) return errorResponse('Stripe: ' + (data?.error?.message ?? res.status), 502);
+    return json({ id: data.id, url: data.url, status: data.status, secret: data.secret });
+  }
+
+  if (action === 'delete') {
+    const id = url.searchParams.get('id') ?? '';
+    if (!/^we_[A-Za-z0-9]+$/.test(id)) return errorResponse('valid endpoint id required');
+    const res = await fetch('https://api.stripe.com/v1/webhook_endpoints/' + id, { method: 'DELETE', headers: auth });
+    const data = (await res.json().catch(() => null)) as any;
+    if (!res.ok) return errorResponse('Stripe: ' + (data?.error?.message ?? res.status), 502);
+    return json({ deleted: data.deleted === true, id });
+  }
+
+  return errorResponse('action must be create or delete');
 }

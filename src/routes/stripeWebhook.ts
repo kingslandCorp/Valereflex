@@ -18,7 +18,7 @@ interface StripeEvent {
   data: { object: StripeCheckoutSession };
 }
 
-interface BookingRow {
+export interface BookingRow {
   id: string;
   service: string;
   duration_minutes: number;
@@ -32,11 +32,15 @@ interface BookingRow {
   price_pence: number;
 }
 
-async function confirmBooking(env: Env, booking: BookingRow): Promise<void> {
+export async function confirmBooking(
+  env: Env,
+  booking: BookingRow,
+  opts: { sendEmails?: boolean; skipConflictNote?: boolean } = {}
+): Promise<void> {
   const def = SERVICE_DEFS[booking.service];
   let notes = booking.notes ?? '';
 
-  if (booking.status === 'expired') {
+  if (booking.status === 'expired' && !opts.skipConflictNote) {
     const free = await computeFreeSlots(env, booking.service, booking.date);
     const stillFree = 'slots' in free && free.slots.includes(booking.time);
     if (!stillFree) {
@@ -44,21 +48,38 @@ async function confirmBooking(env: Env, booking: BookingRow): Promise<void> {
     }
   }
 
-  const eventId = await createCalendarEvent(env, {
-    subject: `${booking.service} — ${booking.name}`,
-    bodyText: `Booked via valereflexology.co.uk\n\nClient: ${booking.name} (${booking.email})\nNotes: ${notes || '—'}`,
-    startLocal: `${booking.date}T${booking.time}:00`,
-    endLocal: addMinutes(booking.date, booking.time, def?.duration ?? booking.duration_minutes),
-    attendeeEmail: booking.email,
-    attendeeName: booking.name,
-  });
-
-  await env.DB.prepare(
-    `UPDATE bookings SET status = 'confirmed', confirmed_at = datetime('now'), graph_event_id = ?, notes = ? WHERE id = ?`
+  // Atomically claim the booking first: the webhook and the cron reconciler can both race to confirm
+  // the same payment, and only the one that flips the status gets to create the event + send emails.
+  const claim = await env.DB.prepare(
+    `UPDATE bookings SET status = 'confirmed', confirmed_at = datetime('now') WHERE id = ? AND status IN ('pending_payment','expired')`
   )
+    .bind(booking.id)
+    .run();
+  if (!claim.meta.changes) return;
+
+  let eventId: string;
+  try {
+    eventId = await createCalendarEvent(env, {
+      subject: `${booking.service} — ${booking.name}`,
+      bodyText: `Booked via valereflexology.co.uk\n\nClient: ${booking.name} (${booking.email})\nNotes: ${notes || '—'}`,
+      startLocal: `${booking.date}T${booking.time}:00`,
+      endLocal: addMinutes(booking.date, booking.time, def?.duration ?? booking.duration_minutes),
+      attendeeEmail: booking.email,
+      attendeeName: booking.name,
+    });
+  } catch (err) {
+    // Release the claim so a later retry (Stripe's, or the next reconcile pass) can try again.
+    await env.DB.prepare(`UPDATE bookings SET status = ?, confirmed_at = NULL WHERE id = ?`)
+      .bind(booking.status, booking.id)
+      .run();
+    throw err;
+  }
+
+  await env.DB.prepare(`UPDATE bookings SET graph_event_id = ?, notes = ? WHERE id = ?`)
     .bind(eventId, notes, booking.id)
     .run();
 
+  if (opts.sendEmails === false) return;
   await sendBookingConfirmationEmails(env, {
     service: booking.service,
     date: booking.date,
@@ -72,6 +93,29 @@ async function confirmBooking(env: Env, booking: BookingRow): Promise<void> {
     payment_method: 'stripe',
     booking_id: booking.id,
   });
+}
+
+// Idempotent: a duplicate webhook delivery or a reconcile pass can never grant the same pack twice.
+export async function recordPackagePurchase(
+  env: Env,
+  session: { id: string; customer_details?: { email?: string }; metadata?: Record<string, string> }
+): Promise<boolean> {
+  const metadata = session.metadata ?? {};
+  const packType = metadata.pack_type as 'six_followup' | 'initial_plus_five' | undefined;
+  const def = packType ? PACK_DEFS[packType] : undefined;
+  if (!def || !packType) return false;
+  const email = (metadata.email ?? session.customer_details?.email ?? '').trim().toLowerCase();
+  if (!email) return false;
+
+  const existing = await env.DB.prepare('SELECT id FROM packages WHERE stripe_session_id = ?').bind(session.id).first();
+  if (existing) return false;
+
+  await env.DB.prepare(
+    'INSERT INTO packages (id, email, name, pack_type, initial_total, followup_total, stripe_session_id) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+    .bind(crypto.randomUUID(), email, metadata.name ?? null, packType, def.initialTotal, def.followupTotal, session.id)
+    .run();
+  return true;
 }
 
 function addMinutes(dateStr: string, timeLabel: string, minutes: number): string {
@@ -110,19 +154,7 @@ export async function handleStripeWebhook(request: Request, env: Env): Promise<R
   }
 
   if (metadata.kind === 'package') {
-    const packType = metadata.pack_type as 'six_followup' | 'initial_plus_five' | undefined;
-    const def = packType ? PACK_DEFS[packType] : undefined;
-    if (!def || !packType) return json({ received: true });
-
-    const email = (metadata.email ?? session.customer_details?.email ?? '').trim().toLowerCase();
-    if (!email) return json({ received: true });
-
-    await env.DB.prepare(
-      `INSERT INTO packages (id, email, name, pack_type, initial_total, followup_total, stripe_session_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-      .bind(crypto.randomUUID(), email, metadata.name ?? null, packType, def.initialTotal, def.followupTotal, session.id)
-      .run();
+    await recordPackagePurchase(env, session);
     return json({ received: true });
   }
 

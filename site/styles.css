@@ -81,7 +81,7 @@ a { color: var(--teal); }
   padding: 0 28px;
 }
 
-.section { padding: 40px 0; }
+.section { padding: 26px 0; }
 .section-alt { background: var(--bg-alt); }
 .section-teal { background: var(--teal); color: var(--teal-mist); }
 .section-teal h2, .section-teal h3 { color: var(--white); }
@@ -124,9 +124,11 @@ a { color: var(--teal); }
 .site-nav {
   position: sticky; top: 0; z-index: 50;
   background: rgba(242, 238, 224, 0.86);
-  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--taupe-line);
 }
+/* No backdrop-filter here: it creates a new containing block for any position:fixed
+   descendant (like the mobile .nav-links panel below), which broke that panel's
+   viewport-relative sizing and squashed the open menu down to a sliver on phones. */
 .nav-inner {
   max-width: var(--container);
   margin: 0 auto;
@@ -178,7 +180,7 @@ a { color: var(--teal); }
 }
 
 /* ---------------- Hero ---------------- */
-.hero { padding: 29px 0 18px; }
+.hero { padding: 19px 0 12px; }
 .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
 .hero h1 { margin-bottom: 0.35em; }
 .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; }
@@ -232,7 +234,7 @@ a { color: var(--teal); }
 .tag-list li { position: relative; padding-left: 22px; font-size: 0.96rem; color: var(--ink); }
 .tag-list li::before { content: "—"; position: absolute; left: 0; color: var(--gold-deep); }
 
-.section-head { max-width: 680px; margin-bottom: 46px; }
+.section-head { max-width: 680px; margin-bottom: 30px; }
 
 /* ---------------- Timeline (About) ---------------- */
 .timeline { position: relative; padding-left: 32px; border-left: 2px solid var(--taupe-line); display: flex; flex-direction: column; gap: 40px; }
@@ -358,5 +360,5 @@ textarea { resize: vertical; min-height: 100px; }
   html { scroll-behavior: auto; }
 }
 
-.page-hero { padding: 25px 0 9px; }
+.page-hero { padding: 16px 0 6px; }
 .breadcrumb { font-family: var(--font-mono); font-size: 0.78rem; color: var(--taupe); text-transform: uppercase; letter-spacing: 0.06em; }

@@ -5,7 +5,8 @@ import { handlePackageCredit, handlePackageCheckout } from './routes/packages';
 import { handleMicrosoftAuthStart, handleMicrosoftAuthCallback } from './routes/msAuth';
 import { handleStripeWebhook } from './routes/stripeWebhook';
 import { handleTestSendEmails } from './routes/testEmail';
-import { handleAdminCancelBooking, handleAdminListEvents, handleAdminSendCalendarSummary } from './routes/admin';
+import { handleAdminCancelBooking, handleAdminListEvents, handleAdminSendCalendarSummary, handleAdminStripeCheck, handleAdminRecoverBooking, handleAdminReconcile, handleAdminStripeWebhook } from './routes/admin';
+import { reconcilePayments } from './lib/reconcile';
 import { errorResponse } from './lib/http';
 
 async function handleApi(request: Request, env: Env, url: URL): Promise<Response> {
@@ -23,12 +24,17 @@ async function handleApi(request: Request, env: Env, url: URL): Promise<Response
   if (pathname === '/api/admin/cancel-booking' && method === 'GET') return handleAdminCancelBooking(env, url);
   if (pathname === '/api/admin/list-events' && method === 'GET') return handleAdminListEvents(env, url);
   if (pathname === '/api/admin/send-calendar-summary' && method === 'GET') return handleAdminSendCalendarSummary(env, url);
+  if (pathname === '/api/admin/stripe-check' && method === 'GET') return handleAdminStripeCheck(env, url);
+  if (pathname === '/api/admin/recover-booking' && method === 'GET') return handleAdminRecoverBooking(env, url);
+  if (pathname === '/api/admin/reconcile' && method === 'GET') return handleAdminReconcile(env, url);
+  if (pathname === '/api/admin/stripe-webhook' && method === 'POST') return handleAdminStripeWebhook(request, env, url);
 
   return errorResponse('not found', 404);
 }
 
 export default {
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(reconcilePayments(env).catch(() => undefined));
     ctx.waitUntil(sweepExpiredHolds(env));
   },
 
